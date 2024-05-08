@@ -21,3 +21,4 @@ Segment Anything Model (SAM) を 3 次元医用画像で使用できるように
    import pip; pip.main(["install", "torch", "torchvision", "tqdm", "torchio", "matplotlib", "edt",  "nibabel", "prefetch_generator", "scikit-image"])
    ```
 1. Extension Wizard を開き，SlicerSAM を読み込みます．
+1. 3D Slicer を再起動したのち，Segment Editor に SlicerSAM が読み込まれていることを確認します．
