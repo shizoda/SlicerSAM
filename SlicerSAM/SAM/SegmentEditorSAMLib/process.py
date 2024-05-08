@@ -31,18 +31,6 @@ def save_image_and_labels(image_array, label_array, image_path, label_path):
     label_nifti = nib.Nifti1Image(label_array, affine=np.eye(4))
     nib.save(label_nifti, label_path)
 
-### 3. ラベル画像の生成
-
-def create_label_image(image_shape, voxel_points):
-    # 全てのボクセルを0で初期化
-    label_array = np.zeros(image_shape, dtype=np.uint8)
-
-    # ボクセルポイントにラベル1を設定
-    for point in voxel_points:
-        if all(0 <= p < s for p, s in zip(point, image_shape)):  # ポイントが画像の範囲内にあるか確認
-            label_array[tuple(point)] = 1
-
-    return label_array
 
 ### 4. JSONファイルの生成
 
@@ -78,7 +66,8 @@ def change_dir(destination):
 def adjust_image_orientation(image_array, inverse=False):
     if not inverse:
         # Coronal プレーンでの反転 (Y軸)
-        flipped_coronal = np.flip(image_array, 1)  # 1 はY軸を指す
+        # flipped_coronal = np.flip(image_array, 1)  # 1 はY軸を指す
+        flipped_coronal = image_array
         
         # Axial が Sagittal に見えるのを修正（X軸とZ軸の入れ替え）
         adjusted_image = np.swapaxes(flipped_coronal, 0, 2)  # 0 はZ軸, 2 はX軸
@@ -89,11 +78,11 @@ def adjust_image_orientation(image_array, inverse=False):
         adjusted_image = np.swapaxes(image_array, 0, 2)  # 0 はZ軸, 2 はX軸
         
         # Coronal プレーンの反転を元に戻す
-        flipped_coronal = np.flip(adjusted_image, 1)  # 1 はY軸を指す
+        flipped_coronal = adjusted_image # np.flip(adjusted_image, 1)  # 1 はY軸を指す
         return flipped_coronal
 
 
-def processSAM3D(arr, voxel_points, samdir, tmpdir="/tmp/sam", filename="image.nii.gz", anatomy="dummy", dataset="dummy"):
+def processSAM3D(arr, label_array, voxel_points, samdir, tmpdir="/tmp/sam", filename="image.nii.gz", anatomy="dummy", dataset="dummy"):
     
     if samdir not in sys.path:
         sys.path.append(samdir)
@@ -102,7 +91,7 @@ def processSAM3D(arr, voxel_points, samdir, tmpdir="/tmp/sam", filename="image.n
     image_path, label_path = setup_directories_and_files(tmpdir, filename, anatomy, dataset)
     arr = adjust_image_orientation(arr)
 
-    label_array = create_label_image(arr.shape, voxel_points)
+    # label_array = create_label_image(arr.shape, voxel_points)
     save_image_and_labels(arr, label_array, image_path, label_path)
     create_json_file(tmpdir, filename, image_path, label_path)
 
