@@ -19,7 +19,10 @@
    cd SlicerSAM
    git clone https://github.com/shizoda/SAM-Med3D.git
    ```
-1. [SAM-Med3D のフォーク](https://github.com/shizoda/SAM-Med3D/) のページに記される方法に従い，`SAM-Med3D` ディレクトリ内 `ckpt` にモデルファイル `sam_med3d.pth` を配置します．
+1. [Prepare the Pre-trained Weights](https://github.com/shizoda/SAM-Med3D/#0-recommend-prepare-the-pre-trained-weights) に記される方法に従い，`SAM-Med3D` ディレクトリ内 `ckpt` にモデルファイル `sam_med3d.pth` を配置します．
+- `SAM-Med3D` ディレクトリ内に `ckpt` ディレクトリを作ります．`ckpt` とは checkpoint の意です．
+- [Google Drive](https://drive.google.com/file/d/1PFeUjlFMAppllS9x1kAWyCYUJM9re2Ub/view?usp=drive_link) から `sam_med3d.pth` をダウンロードします．SAM-Med3D の学習済みモデルです．
+- `sam_med3d.pth` を `ckpt` に入れます．
 1. 3D Slicer を開きます．Python Console を開いて，必要なライブラリをインストールします．
    ```
    import pip; pip.main(["install", "torch", "torchvision", "tqdm", "torchio", "matplotlib", "edt",  "nibabel", "prefetch_generator", "scikit-image"])
