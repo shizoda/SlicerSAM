@@ -2,7 +2,8 @@
 
 [Segment Anything Model (SAM)](https://segment-anything.com/) を 3 次元医用画像で使用できるようにした [SAM-Med3D](https://github.com/uni-medical/SAM-Med3D) の [フォーク](https://github.com/shizoda/SAM-Med3D) を，[3D Slicer](https://www.slicer.org/) から使用できるようにするツールです．
 
-<img src="https://github.com/shizoda/SlicerSAM/assets/34496702/f5e6164b-72ae-4034-bd49-5c4aba0137e9" width="500">
+<!-- <img src="https://github.com/shizoda/SlicerSAM/assets/34496702/f5e6164b-72ae-4034-bd49-5c4aba0137e9" width="500"> -->
+<img src="https://github.com/shizoda/SlicerSAM/assets/34496702/29823086-f977-4c87-91c7-69281dc1ee04" width="500">
 
 
 ※以下の説明も含めて，現在作成中です．
