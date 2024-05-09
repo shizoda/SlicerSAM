@@ -27,5 +27,16 @@
    ```
    import pip; pip.main(["install", "torch", "torchvision", "tqdm", "torchio", "matplotlib", "edt",  "nibabel", "prefetch_generator", "scikit-image"])
    ```
-1. Extension Wizard を開き，SlicerSAM を読み込みます．
-1. 3D Slicer を再起動したのち，Segment Editor に SlicerSAM が読み込まれていることを確認します．
+1. Extension Wizard を開きます．
+虫眼鏡マークを押すと検索画面 (Module Finder) が開きます．`Extension Wizard` を選んで `Switch to Module` ボタンを押します．
+
+<img src="https://github.com/shizoda/SlicerSAM/assets/34496702/1665f25f-6485-4575-be73-3596a4a1000e" width="300">
+
+<img src="https://github.com/shizoda/SlicerSAM/assets/34496702/a537cff7-0411-4fd7-ae77-4847056811af" width="300">
+
+1. `SlicerSAM` 内の `SlicerSAM` ディレクトリを読み込みます（内側のディレクトリ）．
+`Select Extension` ボタンから `SlicerSAM` 内の `SlicerSAM` を選びます． 
+<img src="https://github.com/shizoda/SlicerSAM/assets/34496702/3b276582-040b-4022-a2db-82956f8c73d7" width="500">
+
+1. 3D Slicer を再起動したのち，`Segment Editor` に SlicerSAM が読み込まれていることを確認します．
+<img src="https://github.com/shizoda/SlicerSAM/assets/34496702/ccc2e4c3-9a5d-4443-a7cd-1fd5438c2f49" width="500">
