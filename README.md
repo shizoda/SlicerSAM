@@ -24,10 +24,11 @@
 - [Google Drive](https://drive.google.com/file/d/1PFeUjlFMAppllS9x1kAWyCYUJM9re2Ub/view?usp=drive_link) から `sam_med3d.pth` をダウンロードします．SAM-Med3D の学習済みモデルです．
 - `sam_med3d.pth` を `ckpt` に入れます．
 1. 3D Slicer を開きます．Python Console を開いて，必要なライブラリをインストールします．以下は CUDA 11.7 がセットアップされている場合の例です．
+`torch` や `torchvision` のバージョンは [ここ](https://pytorch.org/get-started/previous-versions/) を参考にしてください．
    ```
    import pip
    pip.main(["install", "tqdm", "torchio", "matplotlib", "edt",  "nibabel", "prefetch_generator", "scikit-image"])
-   pip.main(["install", "torch", "torchvision", "--extra-index-url", "https://download.pytorch.org/whl/cu117"])
+   pip.main(["install", "torch==2.0.1", "torchvision==0.15.2"])
    ```
 1. Extension Wizard を開きます．
 虫眼鏡マークを押すと検索画面 (Module Finder) が開きます．`Extension Wizard` を選んで `Switch to Module` ボタンを押します．
