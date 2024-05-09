@@ -89,7 +89,6 @@ def processSAM3D(arr, label_array, voxel_points, samdir, tmpdir="/tmp/sam", file
 
     # Prepare directories and files
     image_path, label_path = setup_directories_and_files(tmpdir, filename, anatomy, dataset)
-    arr = adjust_image_orientation(arr)
 
     # label_array = create_label_image(arr.shape, voxel_points)
     save_image_and_labels(arr, label_array, image_path, label_path)
@@ -100,7 +99,9 @@ def processSAM3D(arr, label_array, voxel_points, samdir, tmpdir="/tmp/sam", file
 
       sys.argv = ['inference.py', '--seed', '2024', '-cp', os.path.join(samdir, 'ckpt/sam_med3d.pth'), '-tdp', tmpdir, '-nc', str(len(voxel_points)), '--output_dir', os.path.join(tmpdir, "out"), '--task_name', 'infer']
       print("Running:", sys.argv)
-      import inference2
+
+      import inference2, importlib
+      importlib.reload(inference2)
       inference2.run()
 
     # Load the result

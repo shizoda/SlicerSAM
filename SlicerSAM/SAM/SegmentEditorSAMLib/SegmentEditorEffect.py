@@ -10,7 +10,7 @@ import numpy as np
 from SegmentEditorEffects import *
 
 import sys; sys.path.append(os.path.dirname(os.path.realpath(__file__)))
-from process import processSAM3D
+from process import processSAM3D, adjust_image_orientation
 
 
 
@@ -26,6 +26,28 @@ class SegmentEditorEffect(AbstractScriptedSegmentEditorEffect):
         self.samDir = ""  # SAMディレクトリの初期値を設定
         self.tempDir = ""  # 一時ディレクトリの初期値を設定
 
+        self.voxelPoints = []
+        self.negVoxelPoints = []
+
+
+    def get_window_level_and_width(self, volumeNode):
+        """ ボリュームノードからウィンドウレベルとウィンドウ幅を取得 """
+        displayNode = volumeNode.GetDisplayNode()
+        if not displayNode or not isinstance(displayNode, slicer.vtkMRMLScalarVolumeDisplayNode):
+            raise ValueError("Invalid display node or display node is not a scalar volume display node")
+
+        windowLevel = displayNode.GetLevel()
+        windowWidth = displayNode.GetWindow()
+        return windowLevel, windowWidth
+    
+    def normalize_image_to_255(self, imageArray, windowLevel, windowWidth):
+        """ ウィンドウレベルとウィンドウ幅を使用して画像を0～255に正規化 """
+        minValue = windowLevel - (windowWidth / 2.0)
+        maxValue = windowLevel + (windowWidth / 2.0)
+
+        # 正規化の公式を適用
+        normalizedImage = np.clip((imageArray - minValue) * (255.0 / (maxValue - minValue)), 0, 255)
+        return normalizedImage.astype(np.uint8)
 
     def clone(self):
         # It should not be necessary to modify this method
@@ -141,30 +163,31 @@ To segment a single object, create a segment and paint inside and create another
             caller.SetNthControlPointLabel(pointIndex, pointName)
             caller.GetDisplayNode().SetSelectedColor(0.6, 0.3, 0.1)  # Brown
 
-    def convert_ras_to_ijk(self, rasPoint):
-        """RAS座標をIJK座標に変換するヘルパー関数"""
-        voxelPoint = [0, 0, 0, 1]
-        self.rasToIJKMatrix.MultiplyPoint(rasPoint + [1], voxelPoint)
-        return [int(round(x)) for x in voxelPoint[:-1]]
 
     def create_label_image(self, arr_shape):
         """前景と背景の点を使用してラベル画像を生成"""
         label_array = np.zeros(arr_shape, dtype=np.uint8)
+
+        print("Foreground points:", self.voxelPoints)
+        print("Background points:", self.negVoxelPoints)
+
+
         # Foreground points
-        for i in range(self.foregroundNode.GetNumberOfControlPoints()):
-            point = [0.0, 0.0, 0.0]
-            self.foregroundNode.GetNthControlPointPositionWorld(i, point)
-            voxelPoint = self.convert_ras_to_ijk(point)
-            label_array[tuple(voxelPoint)] = 1  # 前景を1でラベル付け
+        for voxelPoint in self.voxelPoints:
+            if all(0 <= p < s for p, s in zip(voxelPoint, arr_shape)):  # 座標が画像範囲内であることを確認
+                label_array[tuple(voxelPoint)] = 1  # 前景を1でラベル付け
+            else:
+                print("Foreground point is out of image range:", voxelPoint)
 
         # Background points
-        for i in range(self.backgroundNode.GetNumberOfControlPoints()):
-            point = [0.0, 0.0, 0.0]
-            self.backgroundNode.GetNthControlPointPositionWorld(i, point)
-            voxelPoint = self.convert_ras_to_ijk(point)
-            label_array[tuple(voxelPoint)] = 2  # 背景を2でラベル付け
+        for voxelPoint in self.negVoxelPoints:
+            if all(0 <= p < s for p, s in zip(voxelPoint, arr_shape)):  # 座標が画像範囲内であることを確認
+                label_array[tuple(voxelPoint)] = 100  # 背景を100でラベル付け
+            else:
+                print("Background point is out of image range:", voxelPoint)
 
         return label_array
+
 
     def processAndImportSegmentation(self, imageArray, labelArray, voxelPoints, segmentationNode, selectedSegmentID, volumeNode):
 
@@ -173,10 +196,21 @@ To segment a single object, create a segment and paint inside and create another
         print("selectedSegmentID", selectedSegmentID)
         slicer.modules.segmentations.logic().ImportLabelmapToSegmentationNode(processedLabelMapVolumeNode, segmentationNode, selectedSegmentID)
 
-    
+    def convert_ras_to_ijk(self, rasPoint, origin, spacing):
+        voxelPoint = [0, 0, 0, 1]
+        self.rasToIJKMatrix.MultiplyPoint(rasPoint + [1], voxelPoint)
 
-    def onProcess(self):
-      
+        '''
+        ijkPoint = [
+            (voxelPoint[0] - origin[0]) / spacing[0],
+            (voxelPoint[1] - origin[1]) / spacing[1],
+            (voxelPoint[2] - origin[2]) / spacing[2]
+        ]
+        return [int(round(x)) for x in ijkPoint]
+        '''
+        return [int(round(x)) for x in voxelPoint[:3]]
+    
+    def onProcess(self):  
         
         # テキストボックスからパスを取得
         self.samDir = self.samDirTextBox.text
@@ -188,36 +222,48 @@ To segment a single object, create a segment and paint inside and create another
         self.rasToIJKMatrix = vtk.vtkMatrix4x4()
         volumeNode.GetRASToIJKMatrix(self.rasToIJKMatrix)
 
-        voxelPoints = []
-        negVoxelPoints = []
 
-        # import pdb; pdb.set_trace()
+        # スペーシングとオリジンを取得
+        spacing = volumeNode.GetSpacing()
+        origin = volumeNode.GetOrigin()
+        print(f"Spacing: {spacing}, Origin: {origin}")
+
+
+        # 前景と背景のボクセルポイントリストを初期化
+        self.voxelPoints = []
+        self.negVoxelPoints = []
 
         # Foreground points
         if self.foregroundNode:
             for i in range(self.foregroundNode.GetNumberOfControlPoints()):
                 rasPoint = [0.0, 0.0, 0.0]
                 self.foregroundNode.GetNthControlPointPositionWorld(i, rasPoint)
-                voxelPoint = [0, 0, 0, 1]  # ここで 1 を追加
-                self.rasToIJKMatrix.MultiplyPoint(rasPoint + [1], voxelPoint)  # ここで座標変換
-                voxelPoint = [int(round(x)) for x in voxelPoint[:-1]]  # 最終的な座標
-                voxelPoints.append(voxelPoint)
+                voxelPoint = self.convert_ras_to_ijk(rasPoint, origin, spacing)
+                self.voxelPoints.append(voxelPoint)
 
         # Background points
         if self.backgroundNode:
             for i in range(self.backgroundNode.GetNumberOfControlPoints()):
                 rasPoint = [0.0, 0.0, 0.0]
                 self.backgroundNode.GetNthControlPointPositionWorld(i, rasPoint)
-                voxelPoint = [0, 0, 0, 1]
-                self.rasToIJKMatrix.MultiplyPoint(rasPoint + [1], voxelPoint)
-                voxelPoint = [int(round(x)) for x in voxelPoint[:-1]]
-                negVoxelPoints.append(voxelPoint)
+                voxelPoint = self.convert_ras_to_ijk(rasPoint, origin, spacing)
+                self.negVoxelPoints.append(voxelPoint)
 
         segmentationNode = self.scriptedEffect.parameterSetNode().GetSegmentationNode()
         selectedSegmentID = self.scriptedEffect.parameterSetNode().GetSelectedSegmentID()
 
-        label_array = self.create_label_image(imageArray.shape)
-        self.processAndImportSegmentation(imageArray, label_array, voxelPoints, segmentationNode, selectedSegmentID, volumeNode)
+        windowLevel, windowWidth = self.get_window_level_and_width(volumeNode)
+        print("windowLevel", windowLevel, "windowWidth", windowWidth)
+        imageArray = self.normalize_image_to_255(imageArray, windowLevel, windowWidth)
+
+        imageArray = adjust_image_orientation(imageArray, inverse=False)
+        try:
+          label_array = self.create_label_image(imageArray.shape)
+        except Exception as e:
+          import traceback; traceback.print_exc()          
+          import pdb; pdb.set_trace()
+
+        self.processAndImportSegmentation(imageArray, label_array, self.voxelPoints, segmentationNode, selectedSegmentID, volumeNode)
 
         # 画像データとセグメントの表示を更新
         segmentationNode.GetDisplayNode().SetVisibility2DFill(True)
