@@ -2,7 +2,7 @@
 
 [Segment Anything Model (SAM)](https://segment-anything.com/) を 3 次元医用画像で使用できるようにした [SAM-Med3D](https://github.com/uni-medical/SAM-Med3D) の [フォーク](https://github.com/shizoda/SAM-Med3D) を，[3D Slicer](https://www.slicer.org/) から使用できるようにするツールです．
 
-![image](https://github.com/shizoda/SlicerSAM/assets/34496702/f5e6164b-72ae-4034-bd49-5c4aba0137e9)
+<img src="https://github.com/shizoda/SlicerSAM/assets/34496702/f5e6164b-72ae-4034-bd49-5c4aba0137e9" width="500">
 
 
 ※以下の説明も含めて，現在作成中です．
@@ -33,9 +33,9 @@
 1. Extension Wizard を開きます．
 虫眼鏡マークを押すと検索画面 (Module Finder) が開きます．`Extension Wizard` を選んで `Switch to Module` ボタンを押します．
 
-<img src="https://github.com/shizoda/SlicerSAM/assets/34496702/1665f25f-6485-4575-be73-3596a4a1000e" width="300">
+<img src="https://github.com/shizoda/SlicerSAM/assets/34496702/1665f25f-6485-4575-be73-3596a4a1000e" height="150">
 
-<img src="https://github.com/shizoda/SlicerSAM/assets/34496702/a537cff7-0411-4fd7-ae77-4847056811af" width="300">
+<img src="https://github.com/shizoda/SlicerSAM/assets/34496702/a537cff7-0411-4fd7-ae77-4847056811af" height="150">
 
 1. `SlicerSAM` 内の `SlicerSAM` ディレクトリを読み込みます（内側のディレクトリ）．
 `Select Extension` ボタンから `SlicerSAM` 内の `SlicerSAM` を選びます． 
