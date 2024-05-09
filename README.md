@@ -23,9 +23,11 @@
 - `SAM-Med3D` ディレクトリ内に `ckpt` ディレクトリを作ります．`ckpt` とは checkpoint の意です．
 - [Google Drive](https://drive.google.com/file/d/1PFeUjlFMAppllS9x1kAWyCYUJM9re2Ub/view?usp=drive_link) から `sam_med3d.pth` をダウンロードします．SAM-Med3D の学習済みモデルです．
 - `sam_med3d.pth` を `ckpt` に入れます．
-1. 3D Slicer を開きます．Python Console を開いて，必要なライブラリをインストールします．
+1. 3D Slicer を開きます．Python Console を開いて，必要なライブラリをインストールします．以下は CUDA 11.7 がセットアップされている場合の例です．
    ```
-   import pip; pip.main(["install", "torch", "torchvision", "tqdm", "torchio", "matplotlib", "edt",  "nibabel", "prefetch_generator", "scikit-image"])
+   import pip
+   pip.main(["install", "tqdm", "torchio", "matplotlib", "edt",  "nibabel", "prefetch_generator", "scikit-image"])
+   pip.main(["install", "torch", "torchvision", "--extra-index-url", "https://download.pytorch.org/whl/cu117"])
    ```
 1. Extension Wizard を開きます．
 虫眼鏡マークを押すと検索画面 (Module Finder) が開きます．`Extension Wizard` を選んで `Switch to Module` ボタンを押します．
